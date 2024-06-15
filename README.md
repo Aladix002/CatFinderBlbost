@@ -1,1 +1,1 @@
-https://aladix002.github.io/CatFinderBlbost/
+https://aladix002.github.io/CatFinderBlbosticka/
