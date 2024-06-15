@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAT Search</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f4f4f4;
+            animation: backgroundFlash 0.5s infinite alternate;
+            position: relative;
+        }
+        @keyframes backgroundFlash {
+            0% { background-color: #f4f4f4; }
+            25% { background-color: #ffcccc; }
+            50% { background-color: #cceeff; }
+            75% { background-color: #ccffcc; }
+            100% { background-color: #ffff99; }
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            z-index: 2;
+            position: relative;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            transition: transform 0.3s;
+        }
+        input:hover, button:hover {
+            transform: scale(1.1);
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #results {
+            margin-top: 20px;
+            text-align: center;
+            z-index: 2;
+            position: relative;
+        }
+        h1 {
+            color: #333;
+            animation: bounce 2s infinite;
+            z-index: 2;
+            position: relative;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        .cat {
+            position: absolute;
+            width: 100px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        #downloadJson {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            animation: blinkAnimation 0.5s infinite alternate;
+        }
+        @keyframes blinkAnimation {
+            0% { background-color: #4CAF50; }
+            25% { background-color: #45a049; }
+            50% { background-color: #4CAF50; }
+            75% { background-color: #45a049; }
+            100% { background-color: #4CAF50; }
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>CAT Search</h1>
+        <form id="searchForm">
+            <input type="text" id="query" placeholder="Zadej klucove slovo" required>
+            <button type="submit">Vyhladat</button>
+        </form>
+        <div id="results"></div>
+        <button id="downloadJson" class="hidden">Stiahni vysledky v JSON formate</button>
+    </div>
+
+    <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Funny cat" class="cat" id="cat1">
+    <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Funny cat" class="cat" id="cat2">
+    <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Funny cat" class="cat" id="cat3">
+    <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Funny cat" class="cat" id="cat4">
+    <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Funny cat" class="cat" id="cat5">
+    <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Funny cat" class="cat" id="cat6">
+    <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Funny cat" class="cat" id="cat7">
+    <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Funny cat" class="cat" id="cat8">
+    <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Funny cat" class="cat" id="cat9">
+    <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Funny cat" class="cat" id="cat10">
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            let query = document.getElementById('query').value;
+            fetchResults(query);
+        });
+
+        let lastFetchedData;
+
+        async function fetchResults(query) {
+            const API_KEY = 'AIzaSyAugTMICOivgVW9p6UJnOqx4-Vm8uzbfUw';
+            const CX = 'b47f116e11f69473f';
+            const URL = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CX}&q=${query}`;
+
+            let response = await fetch(URL);
+            let data = await response.json();
+            lastFetchedData = data; 
+            displayResults(data);
+            let downloadBtn = document.getElementById('downloadJson');
+            downloadBtn.classList.remove('hidden');
+        }
+
+        function displayResults(data) {
+            let resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            data.items.forEach(item => {
+                let result = document.createElement('div');
+                result.innerHTML = `<h3><a href="${item.link}" target="_blank">${item.title}</a></h3><p>${item.snippet}</p>`;
+                resultsDiv.appendChild(result);
+            });
+        }
+
+        document.getElementById('downloadJson').addEventListener('click', function() {
+            saveResultsAsJSON();
+        });
+
+        function saveResultsAsJSON() {
+            let jsonData = JSON.stringify(lastFetchedData.items, null, 2);
+            let blob = new Blob([jsonData], { type: 'application/json' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = 'results.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        const cats = document.querySelectorAll('.cat');
+        cats.forEach(cat => {
+            cat.style.left = `${Math.random() * window.innerWidth}px`;
+            cat.style.top = `${Math.random() * window.innerHeight}px`;
+            cat.dataset.dx = (Math.random() * 8 - 4).toString();
+            cat.dataset.dy = (Math.random() * 8 - 4).toString();
+        });
+
+        function moveCats() {
+            cats.forEach(cat => {
+                let x = parseFloat(cat.style.left);
+                let y = parseFloat(cat.style.top);
+                let dx = parseFloat(cat.dataset.dx);
+                let dy = parseFloat(cat.dataset.dy);
+
+                if (x + dx < 0 || x + dx > window.innerWidth - 100) {
+                    dx = -dx;
+                    cat.dataset.dx = dx.toString();
+                }
+                if (y + dy < 0 || y + dy > window.innerHeight - 100) {
+                    dy = -dy;
+                    cat.dataset.dy = dy.toString();
+                }
+
+                cat.style.left = `${x + dx}px`;
+                cat.style.top = `${y + dy}px`;
+            });
+        }
+
+        setInterval(moveCats, 10);
+    </script>
+</body>
+</html>
